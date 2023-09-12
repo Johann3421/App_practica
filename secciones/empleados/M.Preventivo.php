@@ -106,59 +106,181 @@ include("../../bd.php");
     <!--///////////////////////////////////////////////////////////////////////////////////////////////////////-->
 
     <!--///////////////////////////////////////////////////////////////////////////////////////////////////////-->
-
-    <div class="mb-4">
         <br/>
-    <h3>Materiales Utilizados</h3>
-    <form action="procesar_mantenimiento.php" id="materialesForm">
-        <div class="input-group mb-3">
-            <input type="text" class="form-control" placeholder="Buscar por código" id="codigoMaterial">
-            <button class="btn btn-primary" type="button" id="buscarMaterial">Buscar</button>
-        </div>
-        <div class="input-group mb-3">
-            <input type="text" class="form-control" placeholder="Cantidad utilizada" id="cantidadMaterial">
-            <button class="btn btn-success" type="button" id="agregarMaterial">Agregar</button>
-        </div>
-    </form>
-    
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Código</th>
-                <th>Descripción</th>
-                <th>Cantidad</th>
-                <th>Acción</th>
-            </tr>
-        </thead>
-        <tbody id="listaMateriales">
-            <!-- Aquí se mostrarán los materiales registrados -->
-        </tbody>
-    </table>
-</div>
+        <h1>Registro de Materiales</h1>
+        <form action="procesar_registro_materiales.php" method="POST" class="mb-4">
+            <div class="form-group">
+                <label for="codigoMaterial">Código de Material</label>
+                <input type="text" id="codigoMaterial" name="codigoMaterial" class="form-control" required>
+            </div>
+            <button type="button" onclick="buscarMaterial()" class="btn btn-primary">Buscar</button>
+        </form>
+
+        <table class="table">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Código</th>
+                    <th>Descripción</th>
+                    <th>Cantidad Utilizada</th>
+                    <th>Costo Unitario</th>
+                    <th>Costo Total</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody id="listaMateriales">
+                <!-- Aquí se mostrarán los materiales registrados -->
+            </tbody>
+        </table>
+
+    <script>
+        // Función para buscar material
+        function buscarMaterial() {
+    var codigoMaterial = document.getElementById("codigoMaterial").value;
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            var material = JSON.parse(this.responseText);
+            if (material) {
+                agregarMaterial(material);
+            } else {
+                alert("Material no encontrado");
+            }
+        }
+    };
+    xhttp.open("POST", "procesar_registro_materiales.php", true);
+    xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    xhttp.send("codigoMaterial=" + codigoMaterial + "&cantidadUtilizada=0");
+}
+
+        // Función para agregar material a la lista
+        function agregarMaterial(material) {
+    var listaMateriales = document.getElementById("listaMateriales");
+    var cantidadUtilizada = parseInt(prompt("Ingrese la cantidad utilizada:"));
+
+    // Verificar si se ingresó un número válido
+    if (!isNaN(cantidadUtilizada) && cantidadUtilizada > 0) {
+        // Crear un objeto con los detalles del material
+        var materialObj = {
+            codigo: material.codigo,
+            descripcion: material.descripcion,
+            cantidadUtilizada: cantidadUtilizada,
+            costoUnitario: material.costoUnitario,
+            costoTotal: cantidadUtilizada * material.costoUnitario
+        };
+
+        // Crea una nueva fila para el material
+        var nuevaFila = document.createElement("tr");
+        nuevaFila.innerHTML = `
+            <td>${materialObj.codigo}</td>
+            <td>${materialObj.descripcion}</td>
+            <td>${materialObj.cantidadUtilizada}</td>
+            <td>${materialObj.costoUnitario}</td>
+            <td>${materialObj.costoTotal}</td>
+            <td><button type="button" onclick="eliminarMaterial(this)">Eliminar</button></td>
+        `;
+
+        // Agrega la fila a la tabla
+        listaMateriales.appendChild(nuevaFila);
+
+        // Llamar a la función AJAX para actualizar la cantidad en la base de datos
+        actualizarCantidadEnBD(materialObj.codigo, cantidadUtilizada);
+    } else {
+        alert("Por favor ingrese una cantidad válida.");
+    }
+}
+
+function actualizarCantidadEnBD(codigoMaterial, cantidadUtilizada) {
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            // Mostrar la respuesta del servidor (puede ser un mensaje de éxito o error)
+            console.log(this.responseText);
+        }
+    };
+    xhttp.open("POST", "actualizar_cantidad.php", true);
+    xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    xhttp.send(`codigoMaterial=${codigoMaterial}&cantidadUtilizada=${cantidadUtilizada}`);
+}
+
+        // Función para eliminar material de la lista
+        function eliminarMaterial(botonEliminar) {
+    var fila = botonEliminar.parentElement.parentElement;
+    fila.remove();
+}
+    </script>
+
 <br/>
-<div class="mb-4">
-    <h3>Herramientas Utilizadas</h3>
-    <form id="herramientasForm">
-        <div class="input-group mb-3">
-            <input type="text" class="form-control" placeholder="Buscar por código" id="codigoHerramienta">
-            <button class="btn btn-primary" type="button" id="buscarHerramienta">Buscar</button>
-        </div>
-        <button class="btn btn-success" type="button" id="agregarHerramienta">Agregar</button>
-    </form>
-    
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Código</th>
-                <th>Descripción</th>
-                <th>Acción</th>
-            </tr>
-        </thead>
-        <tbody id="listaHerramientas">
-            <!-- Aquí se mostrarán las herramientas registradas -->
-        </tbody>
-    </table>
-</div>
+<h1>Registro de Herramientas</h1>
+<form action="procesar_herramientas.php" method="POST">
+    <!-- Campo de búsqueda de código de herramienta -->
+    <div class="form-group">
+        <label for="codigoHerramienta">Código de Herramienta</label>
+        <input type="text" id="codigoHerramienta" name="codigoHerramienta" class="form-control" required>
+    </div>
+    <button type="button" onclick="buscarHerramienta()" class="btn btn-primary">Buscar</button>
+
+    <!-- Botón para agregar la herramienta -->
+    <button type="button" onclick="agregarHerramienta()" class="btn btn-success mt-3">Agregar</button>
+</form>
+
+<table class="table">
+    <thead class="thead-dark">
+        <tr>
+            <th>Código</th>
+            <th>Descripción</th>
+            <th>Acción</th>
+        </tr>
+    </thead>
+    <tbody id="listaHerramientas">
+        <!-- Aquí se mostrarán las herramientas registradas -->
+    </tbody>
+</table>
+
+<script>
+    function buscarHerramienta() {
+    var codigoHerramienta = document.getElementById("codigoHerramienta").value;
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            var herramienta = JSON.parse(this.responseText);
+            if (herramienta && herramienta.success) {
+                agregarHerramienta(herramienta.herramienta);
+            } else {
+                alert("Herramienta no encontrada");
+            }
+        }
+    };
+    xhttp.open("POST", "procesar_herramientas.php", true);
+    xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    xhttp.send("codigoHerramienta=" + codigoHerramienta);
+}
+
+
+function agregarHerramienta(herramienta) {
+    var listaHerramientas = document.getElementById("listaHerramientas");
+
+    // Verifica si la herramienta no es undefined y si tiene la propiedad 'codigo'
+    if (herramienta && herramienta.codigo) {
+        // Crea una nueva fila para la herramienta
+        var nuevaFila = document.createElement("tr");
+        nuevaFila.innerHTML = `
+            <td>${herramienta.codigo}</td>
+            <td>${herramienta.descripcion}</td>
+            <td><button type="button" onclick="eliminarHerramienta(this)" class="btn btn-danger">Eliminar</button></td>
+        `;
+
+        // Agrega la fila a la tabla
+        listaHerramientas.appendChild(nuevaFila);
+    } else {
+        alert("Herramienta no encontrada");
+    }
+}
+
+    function eliminarHerramienta(botonEliminar) {
+        var fila = botonEliminar.parentElement.parentElement;
+        fila.remove();
+    }
+</script>
 <br/>
 <div class="mb-4">
     <h3>Mano de Obra</h3>

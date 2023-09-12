@@ -1,12 +1,5 @@
 <?php
-// Conexión a la base de datos
-$conexion = mysqli_connect("localhost:33064", "root", "johann", "app");
-
-// Verifica si la conexión fue exitosa
-if (!$conexion) {
-    die("Error al conectar a la base de datos: " . mysqli_connect_error());
-}
-
+include("../../bd.php");
 // Obtiene los datos del formulario
 $codigo = $_POST['equipo'];
 $modelo = $_POST['modelo'];
