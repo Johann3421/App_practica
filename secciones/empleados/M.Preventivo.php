@@ -282,22 +282,38 @@ function agregarHerramienta(herramienta) {
     }
 </script>
 <br/>
-<div class="mb-4">
-    <h3>Mano de Obra</h3>
-    <form id="manoDeObraForm">
-        <div class="input-group mb-3">
-            <input type="text" class="form-control" placeholder="Buscar por código de trabajador" id="codigoTrabajador">
-            <button class="btn btn-primary" type="button" id="buscarTrabajador">Buscar</button>
+<h3>Mano de Obra</h3>
+    <form id="manoDeObraForm" action="procesar_mano_de_obra.php" method="POST">
+        <div class="form-group">
+            <label for="codigoTrabajador">Código de Trabajador</label>
+            <input type="text" class="form-control" id="codigoTrabajador" name="codigoTrabajador" required>
         </div>
-        <div class="mb-3">
-            <label for="horasTrabajadas" class="form-label">Horas Trabajadas</label>
-            <input type="number" class="form-control" id="horasTrabajadas" name="horasTrabajadas" placeholder="Horas trabajadas">
+        <button type="submit" class="btn btn-primary">Buscar</button>
+        <div class="form-group">
+            <label for="nombreTrabajador">Nombre</label>
+            <input type="text" class="form-control" id="nombreTrabajador" name="nombreTrabajador" readonly>
         </div>
-        <button class="btn btn-success" type="button" id="agregarTrabajador">Agregar</button>
+        <div class="form-group">
+            <label for="fotoTrabajador">Foto</label>
+            <img id="fotoTrabajador" src="" alt="Foto de Trabajador" style="max-width: 150px;" class="img-fluid">
+        </div>
+        <div class="form-group">
+            <label for="sueldoTrabajador">Sueldo</label>
+            <input type="text" class="form-control" id="sueldoTrabajador" name="sueldoTrabajador" readonly>
+        </div>
+        <div class="form-group">
+            <label for="horasTrabajadas">Horas Trabajadas</label>
+            <input type="number" class="form-control" id="horasTrabajadas" name="horasTrabajadas" min="0" required>
+        </div>
+        <div class="form-group">
+            <label for="totalPagar">Total a Pagar</label>
+            <input type="text" class="form-control" id="totalPagar" name="totalPagar" readonly>
+        </div>
+        <button type="submit" class="btn btn-success" id="agregarTrabajador" name="agregarTrabajador">Agregar</button>
     </form>
-    
-    <table class="table">
-        <thead>
+
+    <table class="table mt-4">
+        <thead class="thead-dark">
             <tr>
                 <th>Código</th>
                 <th>Nombre</th>
@@ -313,8 +329,78 @@ function agregarHerramienta(herramienta) {
         </tbody>
     </table>
 </div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+<script>
+    document.getElementById("agregarTrabajador").addEventListener("click", function(event) {
+        event.preventDefault(); // Prevenir el envío del formulario por defecto
+        
+        var codigo = document.getElementById("codigoTrabajador").value;
+        var nombre = document.getElementById("nombreTrabajador").value;
+        var sueldo = document.getElementById("sueldoTrabajador").value;
+        var horasTrabajadas = document.getElementById("horasTrabajadas").value;
+        var totalPagar = sueldo * horasTrabajadas;
+        var listaTrabajadores = document.getElementById("listaTrabajadores");
+
+        var nuevaFila = document.createElement("tr");
+        nuevaFila.innerHTML = `
+            <td>${codigo}</td>
+            <td>${nombre}</td>
+            <td><img src="ruta_a_la_foto" alt="Foto de Trabajador" style="max-width: 50px;"></td>
+            <td>${sueldo}</td>
+            <td>${horasTrabajadas}</td>
+            <td>${totalPagar}</td>
+            <td><button type="button" class="btn btn-danger" onclick="eliminarTrabajador(this)">Eliminar</button></td>
+        `;
+
+        listaTrabajadores.appendChild(nuevaFila);
+
+        // Llenar los campos del formulario con los datos del trabajador
+        document.getElementById("codigoTrabajador").value = "";
+        document.getElementById("nombreTrabajador").value = "";
+        document.getElementById("sueldoTrabajador").value = "";
+        document.getElementById("horasTrabajadas").value = "";
+        document.getElementById("totalPagar").value = "";
+    });
+
+
+document.getElementById("agregarTrabajador").addEventListener("click", agregarTrabajador);
+
+function eliminarTrabajador(botonEliminar) {
+    var fila = botonEliminar.parentElement.parentElement;
+    fila.remove();
+}
+</script>
+
+<!-- A continuación, añadimos el código JavaScript para buscar trabajadores y mostrar su información -->
+<script>
+document.getElementById("buscarTrabajador").addEventListener("click", function() {
+    var codigoTrabajador = document.getElementById("codigoTrabajador").value;
+    var xhttp = new XMLHttpRequest();
+
+    xhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            var respuesta = JSON.parse(this.responseText);
+            if (respuesta.success) {
+                document.getElementById("nombreTrabajador").value = respuesta.nombre;
+                document.getElementById("sueldoTrabajador").value = respuesta.sueldo;
+                document.getElementById("fotoTrabajador").src = respuesta.foto;
+            } else {
+                alert(respuesta.mensaje);
+            }
+        }
+    };
+
+    xhttp.open("POST", "procesar_mano_de_obra.php", true);
+    xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    xhttp.send("codigoTrabajador=" + codigoTrabajador);
+});
+</script>
 <br/>
-<div class="mb-4">
+
     <h3>Qué se va a Realizar</h3>
     <form id="procedimientosForm">
         <div class="mb-3">
@@ -337,7 +423,62 @@ function agregarHerramienta(herramienta) {
     </table>
     
     <button class="btn btn-primary" type="button" id="imprimirProcedimientos">Imprimir</button>
-</div>
+    <script>
+        $(document).ready(function() {
+    $("#agregarProcedimiento").click(function() {
+        var descripcion = $("#descripcionProcedimiento").val();
+        if (descripcion) {
+            $.post("guardar_procedimiento.php", { descripcion: descripcion }, function(data) {
+                if (data.success) {
+                    $("#listaProcedimientos").append("<tr><td>" + descripcion + "</td><td><button class='btn btn-danger eliminar' data-id='" + data.id + "'>Eliminar</button></td></tr>");
+                    $("#descripcionProcedimiento").val("");
+                } else {
+                    alert("Error al agregar el procedimiento");
+                }
+            }, "json");
+        } else {
+            alert("Por favor, ingresa una descripción válida.");
+        }
+    });
+});
+$(document).ready(function() {
+    $("#listaProcedimientos").on("click", ".eliminar", function() {
+        var id = $(this).data("id");
+        var row = $(this).closest("tr");
+        $.post("eliminar_procedimiento.php", { id: id }, function(data) {
+            if (data.success) {
+                row.remove();
+            } else {
+                alert("Error al eliminar el procedimiento");
+            }
+        }, "json");
+    });
+});
+$(document).ready(function() {
+    $("#imprimirProcedimientos").click(function() {
+        var procedimientos = $("#listaProcedimientos").text();
+
+        if (procedimientos) {
+            $.post("guardar_procedimientos_txt.php", { procedimientos: procedimientos }, function(data) {
+                if (data) {
+                    // Descarga el archivo
+                    var blob = new Blob([data]);
+                    var link = document.createElement('a');
+                    link.href = window.URL.createObjectURL(blob);
+                    link.download = 'procedimientos.txt';
+                    link.click();
+                } else {
+                    alert("Error al guardar los procedimientos.");
+                }
+            });
+        } else {
+            alert("No hay procedimientos para guardar.");
+        }
+    });
+});
+
+
+    </script>
 
 
 
