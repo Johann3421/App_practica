@@ -1,75 +1,118 @@
 <?php
 include("../../templates/header.php");
-
 ?>
-<br/>
+
+
+
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Solicitud de Servicio</title>
-    <!-- Agrega enlaces a los archivos CSS de Bootstrap y cualquier otro CSS personalizado aquí -->
-    <link rel="stylesheet" href="ruta_a_tu_archivo_css_bootstrap.css">
-</head>
-<body>
-    <div class="container mt-4">
-        <h1>Solicitud de Servicio</h1>
-        <form action="procesar_solicitud_servicio.php" method="POST">
-            <!-- Campo de Número de Solicitud y Fecha -->
-            <div class="mb-3">
-                <label for="numeroSolicitud" class="form-label">Número de Solicitud</label>
-                <input type="text" class="form-control" id="numeroSolicitud" name="numeroSolicitud">
-            </div>
-            <div class="mb-3">
-                <label for="fecha" class="form-label">Fecha</label>
-                <input type="date" class="form-control" id="fecha" name="fecha">
-            </div>
 
-            <!-- Campo de Código de Equipo -->
-            <div class="mb-3">
-                <label for="codigoEquipo" class="form-label">Código de Equipo</label>
-                <input type="text" class="form-control" id="codigoEquipo" name="codigoEquipo">
-                <button type="button" class="btn btn-primary mt-2" id="buscarEquipo">Buscar</button>
-                <!-- Aquí se mostrará la información del equipo -->
-                <div id="infoEquipo">
-                    <!-- Información del equipo se mostrará aquí -->
-                </div>
-            </div>
+<h3>Solicitud de Servicio</h3>
 
-            <!-- Campo de Urgencia -->
-            <div class="mb-3">
-                <label for="urgencia" class="form-label">Urgencia</label>
-                <select class="form-select" id="urgencia" name="urgencia">
-                    <option value="alta">Alta</option>
-                    <option value="media">Media</option>
-                    <option value="baja">Baja</option>
-                </select>
-            </div>
+        <div class="form-group">
+            <label for="codigoEquipo">Código de Equipo</label>
+            <input type="text" class="form-control" id="codigoEquipo" name="codigoEquipo" required>
+            <button type="button" class="btn btn-primary mt-2" id="buscarEquipo">Buscar</button>
+            <div id="informacionEquipo" class="mt-2"></div> <!-- Este div mostrará la información del equipo -->
+        </div>
 
-            <!-- Campo de Descripción de Trabajo/Falla -->
-            <div class="mb-3">
-                <label for="descripcionTrabajo" class="form-label">Descripción de Trabajo/Falla</label>
-                <textarea class="form-control" id="descripcionTrabajo" name="descripcionTrabajo" rows="4"></textarea>
-            </div>
+        <div class="form-group">
+            <label for="urgencia">Urgencia</label>
+            <select class="form-control" id="urgencia" name="urgencia" required>
+                <option value="alta">Alta</option>
+                <option value="media">Media</option>
+                <option value="baja">Baja</option>
+            </select>
+        </div>
 
-            <!-- Botones -->
-            <div class="text-center">
-                <button class="btn btn-primary" type="submit" name="guardarSolicitud">Guardar</button>
-                <button class="btn btn-secondary" type="button" id="limpiarCampos">Nuevo</button>
-                <button class="btn btn-danger" type="button" id="cerrarFormulario">Salir</button>
-            </div>
-        </form>
+        <div class="form-group">
+            <label for="descripcionFalla">Descripción de la Falla</label>
+            <textarea class="form-control" id="descripcionFalla" name="descripcionFalla" rows="4" required></textarea>
+        </div>
+
+        <button type="button" class="btn btn-primary" id="guardar">Guardar</button>
+        <button type="button" class="btn btn-primary" id="nuevo">Nuevo</button>
+        <button type="button" class="btn btn-secondary" id="salir">Salir</button>
     </div>
 
-    <!-- Agrega enlaces a los archivos JavaScript de Bootstrap y cualquier otro JavaScript personalizado aquí -->
-    <script src="ruta_a_tu_archivo_js_bootstrap.js"></script>
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+    <script>
+        // Función para guardar la solicitud
+        document.getElementById("guardar").addEventListener("click", function() {
+            // Obtener los datos
+            var codigoEquipo = document.getElementById("codigoEquipo").value;
+            var urgencia = document.getElementById("urgencia").value;
+            var descripcionFalla = document.getElementById("descripcionFalla").value;
+
+            // Aquí puedes agregar la lógica para enviar los datos al servidor
+        });
+        document.getElementById("guardar").addEventListener("click", function() {
+    var codigoEquipo = document.getElementById("codigoEquipo").value;
+    var urgencia = document.getElementById("urgencia").value;
+    var descripcionFalla = document.getElementById("descripcionFalla").value;
+
+    // Envía los datos al servidor usando fetch
+    fetch("guardar_solicitud.php", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: "codigoEquipo=" + encodeURIComponent(codigoEquipo) + "&urgencia=" + encodeURIComponent(urgencia) + "&descripcionFalla=" + encodeURIComponent(descripcionFalla)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert("Solicitud guardada exitosamente");
+            // Limpiar los campos después de guardar
+            document.getElementById("codigoEquipo").value = "";
+            document.getElementById("urgencia").value = "alta";
+            document.getElementById("descripcionFalla").value = "";
+            document.getElementById("informacionEquipo").innerHTML = "";
+        } else {
+            alert("Error al guardar la solicitud: " + data.mensaje);
+        }
+    })
+    .catch(error => console.error("Error:", error));
+});
+
+    document.getElementById("salir").addEventListener("click", function() {
+        window.close();
+    });
+
+    document.getElementById("buscarEquipo").addEventListener("click", function() {
+        var codigoEquipo = document.getElementById("codigoEquipo").value;
+
+        fetch("procesar_equipo.php", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded"
+            },
+            body: "codigoEquipo=" + codigoEquipo
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById("informacionEquipo").innerHTML = `
+                    <p>Código: ${data.codigo}</p>
+                    <p>Urgencia: ${data.urgencia}</p>
+                    <p>Descripción de Falla: ${data.descripcion}</p>
+                    <p>Fecha de Creación: ${data.fecha_creacion}</p>
+                `;
+            } else {
+                alert(data.mensaje);
+            }
+        })
+        .catch(error => console.error("Error:", error));
+    });
+</script>
+
 </body>
+
 </html>
-
-
 
 <?php
 include("../../templates/footer.php");
-include("script.php");
 ?>
