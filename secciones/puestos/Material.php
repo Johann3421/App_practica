@@ -17,7 +17,7 @@ include("../../templates/header.php");
         <h1>Registro de Material</h1>
 
         <!-- Formulario de Registro de Material -->
-        <form action="procesar_registro_material.php" method="POST">
+        <form action="procesar_registro_material.php" method="POST" id="formulario-material">
             <!-- Código -->
             <div class="mb-3">
                 <label for="codigoMaterial" class="form-label">Código de Material</label>
@@ -48,17 +48,60 @@ include("../../templates/header.php");
             </div>
 
             <!-- Botones -->
-            <button type="submit" class="btn btn-success">Guardar</button>
-            <button type="button" class="btn btn-primary" id="botonNuevo">Nuevo</button>
-            <button type="button" class="btn btn-danger" id="botonSalir">Salir</button>
+            <button type="submit" class="btn btn-success" onclick="handleSubmit(event)">Guardar</button>
+    <button type="button" class="btn btn-primary" onclick="limpiarFormulario()">Nuevo</button>
+    <button type="button" class="btn btn-danger" onclick="salir()">Salir</button>
         </form>
     </div>
 
     <!-- Scripts de Bootstrap -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/js/bootstrap.min.js" integrity="sha384-Yy3z7U5LJ7x5Og0tPe3vI5Bx8r+/p2LC5f5z5s5k5t5z5Og0tPe3vI5Bx8r+/p2LC5f5z" crossorigin="anonymous"></script>
+    
 </body>
 </html>
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
+<script>
+    function handleSubmit(event) {
+    event.preventDefault();
+
+    // Realiza la petición al servidor aquí
+    // Por ejemplo, usando AJAX
+    $.ajax({
+        type: 'POST',
+        url: 'procesar_registro_material.php',
+        data: $('#formulario-material').serialize(),
+        success: function(response){
+            // Manejar la respuesta del servidor aquí
+            console.log(response);
+        },
+        error: function(error){
+            // Manejar errores aquí
+            console.error(error);
+        }
+    });
+}
+
+// Función para limpiar el formulario
+function limpiarFormulario() {
+    // Obtener todos los elementos de entrada del formulario
+    var formInputs = document.querySelectorAll('#formulario-material input');
+    
+    // Limpiar los valores de los elementos de entrada
+    formInputs.forEach(function(input) {
+        input.value = '';
+    });
+}
+
+
+// Función para salir
+function salir() {
+    // Redirige a la página de inicio o realiza alguna otra acción
+    window.location.href = 'Material.php';
+}
+
+</script>
 
 <?php
 include("../../templates/footer.php");
